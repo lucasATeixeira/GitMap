@@ -4,6 +4,7 @@ import { bindActionCreators } from 'redux';
 
 import ReactMapGL, { Marker } from 'react-map-gl';
 import { Creators as LocalizationActions } from '../../store/ducks/localization';
+import { Creators as UserActions } from '../../store/ducks/user';
 
 import { token } from '../../config/map';
 
@@ -13,7 +14,14 @@ import Modal from '../../components/Modal';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 const Main = ({
-  localization, updateViewport, updateLocalization, updateSize, users, modal,
+  localization,
+  updateViewport,
+  updateLocalization,
+  updateSize,
+  users,
+  modal,
+  toggleModal,
+  closeModal,
 }) => {
   useEffect(() => {
     navigator.geolocation.getCurrentPosition((position) => {
@@ -32,6 +40,7 @@ const Main = ({
   const handleClick = (e) => {
     const [longitude, latitude] = e.lngLat;
     console.log(longitude, latitude);
+    toggleModal();
   };
 
   return (
@@ -75,9 +84,11 @@ const mapStateToProps = state => ({
   localization: state.localization,
   users: state.user.users,
   modal: state.user.modal,
+  loading: state.user.loading,
+  err: state.user.err,
 });
 
-const mapDispatchToProps = dispatch => bindActionCreators(LocalizationActions, dispatch);
+const mapDispatchToProps = dispatch => bindActionCreators({ ...LocalizationActions, ...UserActions }, dispatch);
 
 export default connect(
   mapStateToProps,
