@@ -1,36 +1,33 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+
 import ReactMapGL, { Marker } from 'react-map-gl';
+import { Creators as LocalizationActions } from '../../store/ducks/localization';
+
+import { token } from '../../config/map';
+
 import { Container, User, MarkerImg } from './style';
 import Modal from '../../components/Modal';
-import { token } from '../../config/map';
+
 import 'mapbox-gl/dist/mapbox-gl.css';
 
-const Main = () => {
-  const [viewport, setViewport] = useState({
-    width: window.innerWidth,
-    height: window.innerHeight,
-    latitude: 0,
-    longitude: 0,
-    zoom: 15,
+const Main = ({
+  localization, updateViewport, updateLocalization, updateSize, users, modal,
+}) => {
+  useEffect(() => {
+    navigator.geolocation.getCurrentPosition((position) => {
+      updateLocalization(position.coords.latitude, position.coords.longitude);
+    });
   });
 
   useEffect(() => {
-    navigator.geolocation.getCurrentPosition((position) => {
-      setViewport({
-        ...viewport,
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude,
-      });
-    });
-  }, [viewport]);
-
-  useEffect(() => {
     function handleWindowChange() {
-      setViewport({ ...viewport, width: window.innerWidth, height: window.innerHeight });
+      updateSize(window.innerWidth, window.innerHeight);
     }
     window.addEventListener('resize', handleWindowChange);
     return () => window.removeEventListener('resize', handleWindowChange);
-  }, [viewport]);
+  });
 
   const handleClick = (e) => {
     const [longitude, latitude] = e.lngLat;
@@ -39,61 +36,50 @@ const Main = () => {
 
   return (
     <>
-      <Modal />
+      {modal && <Modal />}
       <Container>
-        <User>
-          <div className="user">
-            <img src="https://avatars3.githubusercontent.com/u/69631?v=4" alt="logo" />
-            <div>
-              <strong>Lucas Teixeira</strong>
-              <small>lucasATeixeira</small>
+        {users.map(user => (
+          <User key={Math.random()}>
+            <div className="user">
+              <img src={user.avatar} alt="logo" />
+              <div>
+                <strong>{user.name}</strong>
+                <small>{user.login}</small>
+              </div>
             </div>
-          </div>
-          <div className="icons">
-            <i className="fa fa-times-circle close" />
-            <i className="fa fa-chevron-right arrow" />
-          </div>
-        </User>
-        <User>
-          <div className="user">
-            <img src="https://avatars3.githubusercontent.com/u/69631?v=4" alt="logo" />
-            <div>
-              <strong>Lucas Teixeira</strong>
-              <small>lucasATeixeira</small>
+            <div className="icons">
+              <i className="fa fa-times-circle close" />
+              <i className="fa fa-chevron-right arrow" />
             </div>
-          </div>
-          <div className="icons">
-            <i className="fa fa-times-circle close" />
-            <i className="fa fa-chevron-right arrow" />
-          </div>
-        </User>
-        <User>
-          <div className="user">
-            <img src="https://avatars3.githubusercontent.com/u/69631?v=4" alt="logo" />
-            <div>
-              <strong>Lucas Teixeira</strong>
-              <small>lucasATeixeira</small>
-            </div>
-          </div>
-          <div className="icons">
-            <i className="fa fa-times-circle close" />
-            <i className="fa fa-chevron-right arrow" />
-          </div>
-        </User>
+          </User>
+        ))}
       </Container>
       <ReactMapGL
-        {...viewport}
-        onViewportChange={newViewport => setViewport(newViewport)}
+        {...localization.viewport}
+        onViewportChange={newViewport => updateViewport(newViewport)}
         mapboxApiAccessToken={token}
         mapStyle="mapbox://styles/mapbox/basic-v9"
         onClick={handleClick}
       >
-        <Marker latitude={viewport.latitude} longitude={viewport.longitude}>
-          <MarkerImg src="https://avatars3.githubusercontent.com/u/69631?v=4" alt="logo" />
-        </Marker>
+        {users.map(user => (
+          <Marker key={Math.random()} latitude={user.latitude} longitude={user.longitude}>
+            <MarkerImg src={user.avatar} alt="logo" />
+          </Marker>
+        ))}
       </ReactMapGL>
     </>
   );
 };
 
-export default Main;
+const mapStateToProps = state => ({
+  localization: state.localization,
+  users: state.user.users,
+  modal: state.user.modal,
+});
+
+const mapDispatchToProps = dispatch => bindActionCreators(LocalizationActions, dispatch);
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(Main);

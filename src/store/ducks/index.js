@@ -1,5 +1,8 @@
 import { combineReducers } from 'redux';
+import localization from './localization';
+import user from './user';
 
 export default combineReducers({
-  example: () => ({}),
+  localization,
+  user,
 });
