@@ -50,9 +50,14 @@ export const User = styled.div`
     }
   }
   div.icons {
+    button {
+      border: none;
+      background: none;
+    }
     i.close {
       color: red;
       font-size: 20px;
+      cursor: pointer;
     }
     i.arrow {
       margin-left: 15px;

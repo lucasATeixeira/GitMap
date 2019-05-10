@@ -1,47 +1,45 @@
 export const Types = {
   TOGGLE_MODAL: 'user/TOGGLE_MODAL',
   CLOSE_MODAL: 'user/CLOSE_MODAL',
+  REMOVE_USER: 'user/REMOVE_USER',
   ADD_USER_REQUEST: 'user/ADD_USER_REQUREST',
   ADD_USER_SUCCESS: 'user/ADD_USER_SUCCESS',
   ADD_USER_FAILURE: 'user/ADD_USER_FAILURE',
 };
 
 const INITIAL_STATE = {
-  users: [
-    {
-      name: 'Lucas Teixeira',
-      login: 'LucasATeixeira',
-      avatar: 'https://avatars3.githubusercontent.com/u/69631?v=4',
-      latitude: -16.707807198721373,
-      longitude: -49.25617857138211,
-    },
-    {
-      name: 'Marina Gabriela',
-      login: 'MarinaGabriela',
-      avatar: 'https://avatars3.githubusercontent.com/u/139426?v=4',
-      latitude: -16.70287470284281,
-      longitude: -49.24997730412947,
-    },
-  ],
+  users: [],
   modal: false,
   loading: false,
   err: null,
+  success: null,
 };
 
 export default function (state = INITIAL_STATE, action) {
   switch (action.type) {
+    case Types.REMOVE_USER:
+      return {
+        ...state,
+        users: state.users.filter(user => user.id !== action.payload.id),
+      };
     case Types.TOGGLE_MODAL:
       return { ...state, modal: true };
     case Types.CLOSE_MODAL:
       return { ...state, modal: false };
     case Types.ADD_USER_REQUEST:
-      return { ...state, loading: true };
+      return {
+        ...state,
+        loading: true,
+        success: false,
+        err: false,
+      };
     case Types.ADD_USER_SUCCESS:
       return {
         ...state,
         err: null,
         loading: false,
         modal: false,
+        success: true,
         users: [...state.users, action.payload.user],
       };
     case Types.ADD_USER_FAILURE:
@@ -56,6 +54,11 @@ export default function (state = INITIAL_STATE, action) {
 }
 
 export const Creators = {
+  removeUser: id => ({
+    type: Types.REMOVE_USER,
+    payload: { id },
+  }),
+
   toggleModal: () => ({
     type: Types.TOGGLE_MODAL,
   }),
